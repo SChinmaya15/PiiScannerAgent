@@ -9,15 +9,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PiiScannerAgent.Validators\PiiScanner.Validators.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="PiiScanner.Infrastructure">
-      <HintPath>..\..\..\repo\PiiScanner\PiiScanner.Infrastructure\bin\Debug\net8.0\PiiScanner.Infrastructure.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>

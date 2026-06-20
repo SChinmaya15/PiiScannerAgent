@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Manufacturer and Version are passed in from the command line in step 7,
+     so this file never needs hand-editing for routine builds. -->
+<?define Name = "PII Scanner Agent" ?>
+<?define ServiceName = "PiiScannerAgent" ?>
+<?define UpgradeCode = "789C55D8-7691-41BD-B2B9-79389A320035" ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package Name="$(Name)"
+             Manufacturer="$(Manufacturer)"
+             Version="$(Version)"
+             UpgradeCode="b1abfd3d-2a29-41b6-a85f-998125f1c6ea"
+             Compressed="true">
+
+        <!-- Blocks installing an older MSI over a newer one; allows in-place upgrades -->
+        <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
+
+        <!-- Installs to C:\Program Files\<Manufacturer>\<Name>\ -->
+        <StandardDirectory Id="ProgramFiles6432Folder">
+            <Directory Id="ROOTDIRECTORY" Name="$(Manufacturer)">
+                <Directory Id="INSTALLFOLDER" Name="$(Name)" />
+            </Directory>
+        </StandardDirectory>
+
+        <DirectoryRef Id="INSTALLFOLDER">
+
+            <!-- The exe, plus the Windows Service registration -->
+            <Component Id="ServiceExecutable" Bitness="always64">
+                <File Id="PiiScannerExe"
+                      Name="PiiScanner.exe"
+                      Source="$(var.PublishDir)\PiiScanner.exe"
+                      KeyPath="true" />
+
+                <ServiceInstall Id="ServiceInstaller"
+                                Type="ownProcess"
+                                Name="$(ServiceName)"
+                                DisplayName="$(Name)"
+                                Description="Scans the endpoint for PII and reports findings to the configured management server."
+                                Start="auto"
+                                Account="LocalSystem"
+                                ErrorControl="normal" />
+
+                <ServiceControl Id="ServiceControl"
+                                 Name="$(ServiceName)"
+                                 Start="install"
+                                 Stop="both"
+                                 Remove="uninstall"
+                                 Wait="true" />
+            </Component>
+
+            <!-- Configuration file shipped alongside the exe -->
+            <Component Id="AppSettings" Bitness="always64">
+                <File Id="AppSettingsJson"
+                      Name="appsettings.json"
+                      Source="$(var.PublishDir)\appsettings.json"
+                      KeyPath="true" />
+            </Component>
+
+            <!-- Cleans up the install folder fully on uninstall, including
+                 the AgentId that the Worker writes into appsettings.json at runtime -->
+            <Component Id="CleanupFolder" Bitness="always64" Guid="*">
+                <CreateFolder />
+                <RemoveFile Id="RemoveAllFiles" Name="*.*" On="uninstall" />
+                <RemoveFolder Id="RemoveInstallFolder" On="uninstall" />
+                <RegistryValue Root="HKLM"
+                                Key="Software\$(Manufacturer)\$(Name)"
+                                Name="Installed"
+                                Type="integer"
+                                Value="1"
+                                KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+
+        <Feature Id="MainFeature" Title="$(Name)" Level="1">
+            <ComponentRef Id="ServiceExecutable" />
+            <ComponentRef Id="AppSettings" />
+            <ComponentRef Id="CleanupFolder" />
+        </Feature>
+
+    </Package>
+</Wix>

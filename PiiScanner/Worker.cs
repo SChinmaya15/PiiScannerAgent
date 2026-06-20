@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -33,17 +34,15 @@ namespace PiiScanner
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Worker starting at: {StartTime}", DateTimeOffset.Now);  
             try
             {
+                _logger.LogInformation("Registering the agent for agentId at {StartTime}", DateTimeOffset.Now);
                 var registrationResponse = await RegisterAgent(stoppingToken);
                 if (registrationResponse != null)
                 {
-                    // set polling interval
-                    //if (registrationResponse.PollingIntervalMinutes >0)
-                    //{
-                    _pollingIntervalMinutes = 5;//registrationResponse.PollingIntervalMinutes;
-                    //}
-
+                   
+                    _pollingIntervalMinutes = 5;
                     // start heartbeat loop in parallel
                     _ = Task.Run(() => HeartbeatLoop(registrationResponse.AgentId, stoppingToken), stoppingToken);
                 }
@@ -83,7 +82,7 @@ namespace PiiScanner
             var response = await _httpClient.PostAsJsonAsync(registrationUrl, request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("Registration failed with status code {code}", response.StatusCode);
+                _logger.LogDebug("Registration failed with status code {code}", response.StatusCode);
                 return null;
             }
 
@@ -104,6 +103,7 @@ namespace PiiScanner
         {
             try
             {
+                
                 var heartbeatUrl = _configuration["AgentRegistration:HeartbeatUrl"];
                 var registrationUrl = _configuration["AgentRegistration:Url"] ?? string.Empty;
                 if (string.IsNullOrWhiteSpace(heartbeatUrl) && !string.IsNullOrWhiteSpace(registrationUrl))
@@ -124,6 +124,7 @@ namespace PiiScanner
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
+                    _logger.LogInformation("Sending Heartbeat for agent id: {agentId}, polling interval {minutes} minutes", agentId, _pollingIntervalMinutes);
                     var heartbeat = new AgentHeartbeatRequest
                     {
                         AgentId = agentId,

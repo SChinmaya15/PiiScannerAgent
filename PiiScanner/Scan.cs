@@ -1,5 +1,6 @@
 ﻿using PiiScanner.Models;
 using PiiScanner.Validators;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -19,7 +20,7 @@ namespace PiiScanner
 
 
 
-        public Scan(ILogger<Scan> logger)
+        public Scan(ILogger<Scan> logger, HttpClient httpClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             // Honour config's parallelThreads but never exceed the hard cap of 10
@@ -28,10 +29,12 @@ namespace PiiScanner
                 MaxConcurrentThreads);
 
             _semaphore = new SemaphoreSlim(concurrency, concurrency);
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         public async Task RunAsync(ScanConfig config, CancellationToken cancellationToken = default)
         {
+            _logger.LogInformation("Entered Run Scan for the Scan {config}", config);
             _config = config;
             // 1. Resolve scan root and extension whitelist from JSON config
             string scanPath = ResolveScanPath();
@@ -221,8 +224,7 @@ namespace PiiScanner
                 var json = JsonSerializer.Serialize(results);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                using var httpClient = new HttpClient();
-                var response = await httpClient.PostAsync(
+                var response = await _httpClient.PostAsync(
                     "https://localhost:44346/worker/scanresult", content);
 
                 response.EnsureSuccessStatusCode();

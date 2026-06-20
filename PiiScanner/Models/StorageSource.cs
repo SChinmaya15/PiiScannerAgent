@@ -8,10 +8,10 @@ namespace PiiScanner.Models
 {
     public enum StorageSource
     {
-        LOCAL,
-        GOOGLE_DRIVE,
-        DROPBOX,
-        ONEDRIVE,
-        AWS_S3
+        LOCAL=0,
+        AWS_S3=1,
+        DROPBOX=2,
+        ONEDRIVE=3,
+        GOOGLE_DRIVE=4
     }
 }
