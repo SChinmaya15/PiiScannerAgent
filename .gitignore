@@ -1,0 +1,126 @@
+# Visual Studio
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+out/
+artifacts/
+/publish/
+**/Debug/
+**/debug/
+**/Release/
+
+# Rider
+.idea/
+*.sln.iml
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# NuGet
+*.nupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+
+# Dotnet
+*.dll
+*.exe
+*.pdb
+*.log
+*.vsix
+
+# Test results
+TestResults/
+*.trx
+coverage.cobertura.xml
+coverage.opencover.xml
+coverage.*
+
+# User-specific files
+*.user
+*.userprefs
+*.psess
+*.vsp
+*.vspx
+*_i.c
+*_p.c
+*.ncb
+*.sdf
+*.cache
+
+# ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Visual Studio Code
+.vscode/
+.history/
+
+# Local DB / local settings
+appsettings.*.json
+local.settings.json
+secrets.json
+.env
+.env.local
+
+# SQL Server files
+*.mdf
+*.ldf
+
+# Entity Framework
+*.dbmdl
+
+# Azure
+.publishsettings
+.publishprofiles/
+
+# Docker
+docker-compose.override.yml
+Dockerfile*
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage & profiling
+*.coverage
+*.coveragexml
+*.prof
+*.nprof
+
+# Misc
+Thumbs.db
+.DS_Store
+*.class
+*.jar
+
+# Ignore JetBrains Rider caches
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+
+# Ignore editor backups
+*~
+*.swp
+
+# Git credentials
+.env.*.local
+
+# End of file

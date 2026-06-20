@@ -1,12 +1,7 @@
-﻿using PiiScanner.Infrastructure;
-using PiiScanner.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+﻿using PiiScanner.Models;
+using PiiScanner.Validators;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace PiiScanner
 {

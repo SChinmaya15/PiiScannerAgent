@@ -147,7 +147,7 @@ namespace PiiScanner
                             try
                             {
                                 var hbResponse = await resp.Content.ReadFromJsonAsync<HeartbeatResponse>(cancellationToken: cancellationToken);
-                                if (hbResponse != null && !string.IsNullOrWhiteSpace(hbResponse.ScanConfig.Id))
+                                if (hbResponse != null && !string.IsNullOrWhiteSpace(hbResponse.ScanConfig?.Id))
                                 {
                                     _logger.LogInformation("Received scan config {scanId} - {scanName}", hbResponse.ScanConfig.Id, hbResponse.ScanConfig.Name);
                                     _ = Task.Run(() => _scan.RunAsync(hbResponse.ScanConfig, CancellationToken.None),CancellationToken.None);
