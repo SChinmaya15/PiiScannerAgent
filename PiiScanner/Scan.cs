@@ -1,4 +1,5 @@
-﻿using PiiScanner.Models;
+﻿using PiiScanner.Data;
+using PiiScanner.Models;
 using PiiScanner.Validators;
 using System.Net;
 using System.Text;
@@ -11,6 +12,7 @@ namespace PiiScanner
         private readonly ILogger<Scan> _logger;
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
+        private readonly ScanResultRepository _repository;
         private readonly string _configPath;
         private int _pollingIntervalMinutes = 5;
         private const int MaxConcurrentThreads = 10;     // hard cap
@@ -20,7 +22,7 @@ namespace PiiScanner
 
 
 
-        public Scan(ILogger<Scan> logger, HttpClient httpClient)
+        public Scan(ILogger<Scan> logger, HttpClient httpClient, IConfiguration configuration, ScanResultRepository repository)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             // Honour config's parallelThreads but never exceed the hard cap of 10
@@ -29,7 +31,9 @@ namespace PiiScanner
                 MaxConcurrentThreads);
 
             _semaphore = new SemaphoreSlim(concurrency, concurrency);
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(_configuration));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
         public async Task RunAsync(ScanConfig config, CancellationToken cancellationToken = default)
@@ -170,7 +174,7 @@ namespace PiiScanner
                         content,
                         _config.Detection?.Entities ?? new List<string>());
 
-                    HandleResults(filePath, results);
+                    //HandleResults(filePath, results);
                     return; // success — exit retry loop
                 }
                 catch (OperationCanceledException)
@@ -225,7 +229,7 @@ namespace PiiScanner
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await _httpClient.PostAsync(
-                    "https://localhost:44346/worker/scanresult", content);
+                    _configuration["AgentRegistration:ScanResultUrl"], content);
 
                 response.EnsureSuccessStatusCode();
 
@@ -253,7 +257,7 @@ namespace PiiScanner
 
 
 
-        public Task<List<ScanResults>> DetectAsync(
+        public async Task<List<ScanResults>> DetectAsync(
             string filePath,
            string content,
            List<string> entities)
@@ -338,8 +342,23 @@ namespace PiiScanner
                     IsDetected = true,
                     Details = $"Found BankAccount: {string.Join(", ", bankAccounts)}"
                 });
-
-            return Task.FromResult(results);
+            // Persist to SQLite queue for background uploader
+            if (results.Count > 0)
+            {
+                foreach (var r in results)
+                {
+                    try
+                    {
+                        await _repository.EnqueueAsync(r);
+                        _logger.LogDebug("Enqueued scan result {Id} for {File}", r.Id, filePath);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to enqueue scan result for {File}", filePath);
+                    }
+                }
+            }
+            return results;
         }
     }
 }

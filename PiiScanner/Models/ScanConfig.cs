@@ -11,7 +11,7 @@ namespace PiiScanner.Models
         public string? Id { get; set; }
         public string Name { get; set; }
         public string Status { get; set; }
-        public List<Agents> AgentIds { get; set; }
+        public List<Agents> Agents { get; set; }
         public string ScanType { get; set; }
         public ScanSource Source { get; set; }
         public ScanFilters Filters { get; set; }
@@ -25,7 +25,7 @@ namespace PiiScanner.Models
 
     public class ScanSource
     {
-        public int Location { get; set; }//
+        public StorageSource Location { get; set; }//
         public string Path { get; set; }
         public string ScanMode { get; set; }
         public Credentials? Credentials { get; set; }

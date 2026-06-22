@@ -1,6 +1,7 @@
 using PiiScanner;
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
+using PiiScanner.Data;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -23,8 +24,10 @@ builder.Services.AddSingleton(sp =>
     return new HttpClient(handler);
 });
 
+builder.Services.AddSingleton<ScanResultRepository>();
 builder.Services.AddSingleton<Scan>();
 builder.Services.AddHostedService<Worker>();
+builder.Services.AddHostedService<ResultUploader>();
 
 // Configure logging: console + file logger writing to install folder with "dd_MM.txt" names.
 builder.Logging.ClearProviders();
